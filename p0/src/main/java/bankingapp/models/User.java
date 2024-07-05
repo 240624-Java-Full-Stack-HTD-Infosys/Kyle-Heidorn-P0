@@ -1,14 +1,19 @@
 package bankingapp.models;
 
+import java.util.List;
+
 public class User {
 
+    private Integer userId;
     private String firstName;
     private String lastName;
     private String username;
     private String email;
     private String password;
+    List<Account> accounts;
 
-    public User(String firstName, String lastName, String email, String password, String username) {
+    public User(Integer userId, String firstName, String lastName, String email, String password, String username) {
+        this.userId = userId;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -59,6 +64,20 @@ public class User {
         this.password = password;
     }
 
+    public Integer getUserId() {
+        return userId;
+    }
 
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    public List<Account> getAccounts() {
+        return accounts;
+    }
+
+    public void setAccounts(List<Account> accounts) {
+        this.accounts = accounts;
+    }
 }
 
