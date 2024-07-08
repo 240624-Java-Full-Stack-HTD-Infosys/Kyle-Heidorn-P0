@@ -4,19 +4,19 @@ public class Account {
 
     private Integer accountId;
     private double balance;
-    private String accountType; // "Savings" or "Checking"
     private String accountName;
+    private String accountType; // "Savings" or "Checking"
     User user;
 
     public Account() {
 
     }
 
-    public Account(Integer accountId, double balance, String accountType, String accountName, User user) {
+    public Account(Integer accountId, double balance, String accountName, String accountType, User user) {
         this.accountId = accountId;
         this.balance = balance;
-        this.accountType = accountType;
         this.accountName = accountName;
+        this.accountType = accountType;
         this.user = user;
     }
 
