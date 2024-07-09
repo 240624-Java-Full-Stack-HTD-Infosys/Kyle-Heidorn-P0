@@ -4,23 +4,32 @@ import java.util.List;
 
 public class Transaction {
 
-    private Integer transactionId;
-    private String transactionType; // "Deposit", "Withdraw", "Transfer"
-    private double amount;
-    private String date;
+    Integer transactionId;
+    String transactionType; // "Deposit", "Withdraw", "Transfer"
+    double amount;
+    String date;
     User user;
     List<Account> accounts;
 
-    public Transaction(Integer transactionId, String transactionType, double amount, String date, User user) {
-        this.transactionId = transactionId;
+    public Transaction(String transactionType, double amount, String date, User user, List<Account> accounts) {
         this.transactionType = transactionType;
         this.amount = amount;
         this.date = date;
         this.user = user;
+        this.accounts = accounts;
     }
 
     public Transaction() {
+    }
 
+    // Getters and setters...
+
+    public Integer getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(Integer transactionId) {
+        this.transactionId = transactionId;
     }
 
     public String getTransactionType() {
@@ -47,14 +56,6 @@ public class Transaction {
         this.date = date;
     }
 
-    public Integer getTransactionId() {
-        return transactionId;
-    }
-
-    public void setTransactionId(Integer transactionId) {
-        this.transactionId = transactionId;
-    }
-
     public User getUser() {
         return user;
     }
@@ -71,3 +72,4 @@ public class Transaction {
         this.accounts = accounts;
     }
 }
+

@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TransactionDao {
@@ -21,57 +22,60 @@ public class TransactionDao {
         this.connection = ConnectionUtils.getConnection();
     }
 
-    public void createTransaction(Transaction transaction) throws SQLException {
-        String sql = "INSERT INTO transactions (transaction_type, amount, date, user_id) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, transaction.getTransactionType());
-            pstmt.setDouble(2, transaction.getAmount());
-            pstmt.setString(3, transaction.getDate());
-            pstmt.setInt(4, transaction.getUser().getUserId());
-            pstmt.executeUpdate();
+    public Transaction saveTransaction(Transaction transaction) throws SQLException {
+        if (transaction.getTransactionId() == null) {
+            String sql = "INSERT INTO transactions (transaction_type, amount, date, account_id, user_id) VALUES (?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                pstmt.setString(1, transaction.getTransactionType());
+                pstmt.setDouble(2, transaction.getAmount());
+                pstmt.setString(3, transaction.getDate());
+                pstmt.setInt(4, transaction.getAccounts().get(0).getAccountId()); // Assuming first account for simplicity
+                pstmt.setInt(5, transaction.getUser().getUserId());
+                pstmt.executeUpdate();
 
-            ResultSet keys = pstmt.getGeneratedKeys();
-            if (keys.next()) {
-                transaction.setTransactionId(keys.getInt(1));
+                ResultSet keys = pstmt.getGeneratedKeys();
+                if (keys.next()) {
+                    transaction.setTransactionId(keys.getInt(1));
+                }
+            }
+        } else {
+            String sql = "UPDATE transactions SET transaction_type = ?, amount = ?, date = ?, user_id = ? WHERE transaction_id = ?";
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setString(1, transaction.getTransactionType());
+                pstmt.setDouble(2, transaction.getAmount());
+                pstmt.setString(3, transaction.getDate());
+                pstmt.setInt(4, transaction.getUser().getUserId());
+                pstmt.setInt(5, transaction.getTransactionId());
+                pstmt.executeUpdate();
             }
         }
-    }
-
-    public Transaction readTransaction(int id) throws SQLException {
-        String sql = "SELECT * FROM transactions WHERE transaction_id = ?";
-        PreparedStatement pstmt = connection.prepareStatement(sql);
-        pstmt.setInt(1, id);
-        ResultSet results = pstmt.executeQuery();
-
-        Transaction transaction = new Transaction();
-        if (results.next()) {
-            transaction.setTransactionId(results.getInt("transaction_id"));
-            transaction.setTransactionType(results.getString("transaction_type"));
-            transaction.setAmount(results.getDouble("amount"));
-            transaction.setDate(results.getString("date"));
-
-            User user = new User();
-            user.setUserId(results.getInt("user_id"));
-            transaction.setUser(user);
-
-            List<Account> accounts = getAccountsByTransactionId(id);
-            transaction.setAccounts(accounts);
-        } else {
-            return null;
-        }
-
         return transaction;
     }
 
-    public void updateTransaction(Transaction transaction) throws SQLException {
-        String sql = "UPDATE transactions SET transaction_type = ?, amount = ?, date = ?, user_id = ? WHERE transaction_id = ?";
+    public Transaction getTransactionById(int transactionId) throws SQLException {
+        String sql = "SELECT * FROM transactions WHERE transaction_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, transaction.getTransactionType());
-            pstmt.setDouble(2, transaction.getAmount());
-            pstmt.setString(3, transaction.getDate());
-            pstmt.setInt(4, transaction.getUser().getUserId());
-            pstmt.setInt(5, transaction.getTransactionId());
-            pstmt.executeUpdate();
+            pstmt.setInt(1, transactionId);
+            try (ResultSet results = pstmt.executeQuery()) {
+                if (results.next()) {
+                    Transaction transaction = new Transaction();
+                    transaction.setTransactionId(results.getInt("transaction_id"));
+                    transaction.setTransactionType(results.getString("transaction_type"));
+                    transaction.setAmount(results.getDouble("amount"));
+                    transaction.setDate(results.getString("date"));
+
+                    User user = new User();
+                    user.setUserId(results.getInt("user_id"));
+                    transaction.setUser(user);
+
+                    List<Account> accounts = getAccountsByTransactionId(transactionId); // Implement this method
+                    transaction.setAccounts(accounts);
+
+                    return transaction;
+                } else {
+                    return null;
+                }
+            }
         }
     }
 
@@ -109,6 +113,36 @@ public class TransactionDao {
         return transactions;
     }
 
+    public List<Transaction> getTransactionsByAccountId(int accountId) throws  SQLException{
+        String sql = "SELECT * FROM transactions WHERE account_id = ?";
+        List<Transaction> transactions = new ArrayList<>();
+
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)){
+            pstmt.setInt(1, accountId);
+            ResultSet results = pstmt.executeQuery();
+
+            while(results.next()){
+                Transaction transaction = new Transaction();
+                transaction.setTransactionId(results.getInt("transaction_id"));
+                transaction.setTransactionType(results.getString("transaction_type"));
+                transaction.setAmount(results.getDouble("amount"));
+                transaction.setDate(results.getString("date"));
+
+                Account account = new Account();
+                account.setAccountId(results.getInt("account_id"));
+                transaction.setAccounts(Arrays.asList(account));
+
+                User user = new User();
+                user.setUserId(results.getInt("user_id"));
+                transaction.setUser(user);
+
+                transactions.add(transaction);
+            }
+        }
+        return transactions;
+    }
+
+
     private List<Account> getAccountsByTransactionId(int transactionId) throws SQLException {
         String sql = "SELECT a.* FROM accounts a JOIN transaction_accounts ta ON a.account_id = ta.account_id WHERE ta.transaction_id = ?";
         List<Account> accounts = new ArrayList<>();
@@ -131,4 +165,5 @@ public class TransactionDao {
         }
         return accounts;
     }
+
 }
