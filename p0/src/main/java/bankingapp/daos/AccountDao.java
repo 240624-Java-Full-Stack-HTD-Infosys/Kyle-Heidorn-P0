@@ -14,9 +14,9 @@ import java.util.List;
 
 public class AccountDao {
 
-    private final Connection connection;
+    Connection connection;
 
-    public AccountDao() throws SQLException, IOException {
+    public AccountDao(Connection connection) throws SQLException, IOException {
         this.connection = ConnectionUtils.getConnection();
     }
 

@@ -34,8 +34,19 @@ public class UserService {
 
     }
 
+    public User readByUserId(int id) throws SQLException {
+        return userDao.readUserId(id);
+    }
+
     public User readUserByUsername(String username) throws SQLException{
         return userDao.readUserByUsername(username);
     }
 
+    public User updateUser(User user) throws SQLException {
+        return userDao.saveUser(user);
+    }
+
+    public User deleteUser(int userId) throws SQLException {
+        return userDao.deleteUser(userId);
+    }
 }

@@ -27,6 +27,8 @@ public class TransactionService {
         return transactionDao.getTransactionsByAccountId(accountId);
     }
 
-
+   public List<Transaction> getTransactionsByUserId(int userId) throws SQLException {
+        return transactionDao.readAllTransactionsByUserId(userId);
+   }
 }
 

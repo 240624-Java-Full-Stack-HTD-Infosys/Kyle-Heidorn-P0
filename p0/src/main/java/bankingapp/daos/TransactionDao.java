@@ -16,9 +16,9 @@ import java.util.List;
 
 public class TransactionDao {
 
-    private final Connection connection;
+    Connection connection;
 
-    public TransactionDao() throws SQLException, IOException {
+    public TransactionDao(Connection connection) throws SQLException, IOException {
         this.connection = ConnectionUtils.getConnection();
     }
 

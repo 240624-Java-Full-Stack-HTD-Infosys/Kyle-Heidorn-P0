@@ -11,9 +11,9 @@ import java.sql.SQLException;
 
 public class UserDao {
 
-    private final Connection connection;
+    Connection connection;
 
-    public UserDao() throws SQLException, IOException {
+    public UserDao(Connection connection) throws SQLException, IOException {
         this.connection = ConnectionUtils.getConnection();
     }
 
@@ -51,7 +51,7 @@ public class UserDao {
     }
 
     //read user
-    public User readUser(int id) throws SQLException {
+    public User readUserId(int id) throws SQLException {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
         pstmt.setInt(1, id);
@@ -92,11 +92,12 @@ public class UserDao {
     }
 
     //delete user
-    public void deleteUser(int userId) throws SQLException {
+    public User deleteUser(int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setInt(1, userId);
             pstmt.execute();
         }
+        return null;
     }
 }
