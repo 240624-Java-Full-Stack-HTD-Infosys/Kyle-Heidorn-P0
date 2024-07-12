@@ -96,10 +96,18 @@ public class AccountDao {
     }
 
     public void deleteAccount(int accountId) throws SQLException {
-        String sql = "DELETE FROM accounts WHERE account_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, accountId);
-            pstmt.execute();
+        // First delete transactions associated with the account
+        String deleteTransactionsSql = "DELETE FROM transactions WHERE account_id = ?";
+        try (PreparedStatement pstmt1 = connection.prepareStatement(deleteTransactionsSql)) {
+            pstmt1.setInt(1, accountId);
+            pstmt1.executeUpdate();
+        }
+
+        // Now delete the account
+        String deleteAccountSql = "DELETE FROM accounts WHERE account_id = ?";
+        try (PreparedStatement pstmt2 = connection.prepareStatement(deleteAccountSql)) {
+            pstmt2.setInt(1, accountId);
+            pstmt2.execute();
         }
     }
 }

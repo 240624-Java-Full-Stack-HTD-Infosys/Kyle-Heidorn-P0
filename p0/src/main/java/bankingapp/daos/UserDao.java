@@ -13,6 +13,7 @@ public class UserDao {
 
     Connection connection;
 
+    //Initializes the connection using the ConnectionUtils class
     public UserDao(Connection connection) throws SQLException, IOException {
         this.connection = ConnectionUtils.getConnection();
     }
@@ -20,6 +21,7 @@ public class UserDao {
     //create and update user
     public User saveUser(User user) throws SQLException {
         if (user.getUserId() == null) {
+            // If the user ID is null, it means the user is new and you need to insert a new record
             String sql = "INSERT INTO users (username, password, email, first_name, last_name) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 pstmt.setString(1, user.getUsername());
@@ -35,6 +37,7 @@ public class UserDao {
                 }
             }
         } else {
+            // If the user ID is not null, it means you need to update an existing record
             String sql = "UPDATE users SET username = ?, password = ?, email = ?, first_name = ?, last_name = ? WHERE user_id = ?";
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, user.getUsername());
@@ -50,7 +53,7 @@ public class UserDao {
 
     }
 
-    //read user
+    //read user by their id
     public User readUserId(int id) throws SQLException {
         String sql = "SELECT * FROM users WHERE user_id = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -72,6 +75,7 @@ public class UserDao {
         return user;
     }
 
+    //read user by username
     public User readUserByUsername(String username) throws SQLException {
         String sql = "SELECT * FROM users WHERE username = ?";
         PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -91,7 +95,7 @@ public class UserDao {
         return user;
     }
 
-    //delete user
+    //delete user by their id
     public User deleteUser(int userId) throws SQLException {
         String sql = "DELETE FROM users WHERE user_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {

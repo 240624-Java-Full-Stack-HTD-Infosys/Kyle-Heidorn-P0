@@ -11,10 +11,12 @@ public class ConnectionUtils {
 
     public static Connection getConnection() throws SQLException, IOException{
 
+        //gets a connection from the postgres database
         InputStream inputStream = ConnectionUtils.class.getClassLoader().getResourceAsStream("application.properties");
         Properties props = new Properties();
         props.load(inputStream);
 
+        //intakes the url to the database, username & password
         Connection conn = DriverManager.getConnection(props.getProperty("url"), props.getProperty("username"), props.getProperty("password"));
 
 

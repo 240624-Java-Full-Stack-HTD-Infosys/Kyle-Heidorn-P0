@@ -22,8 +22,6 @@ public class Transaction {
     public Transaction() {
     }
 
-    // Getters and setters...
-
     public Integer getTransactionId() {
         return transactionId;
     }

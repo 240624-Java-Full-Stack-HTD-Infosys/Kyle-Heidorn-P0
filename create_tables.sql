@@ -25,9 +25,16 @@ CREATE TABLE transactions(
 	transaction_id SERIAL primary key,
 	transaction_type VARCHAR(50) not null, --Deposit, Withdraw, Transfer
 	amount NUMERIC(15, 2) not null,
-	date TIMESTAMP default CURRENT_TIMESTAMP,
+	date VARCHAR(8) not null,
 	user_id INTEGER,
 	account_id INTEGER,
 	CONSTRAINT fk_account_id FOREIGN KEY (account_id) REFERENCES accounts (account_id),
 	CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
 );
+
+select * from accounts order by account_id;
+
+select * from users order by user_id;
+
+select * from transactions order by account_id, transaction_id desc;
+

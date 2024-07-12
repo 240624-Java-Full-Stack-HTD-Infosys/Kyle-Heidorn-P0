@@ -2,6 +2,7 @@ package bankingapp.services;
 
 import bankingapp.daos.AccountDao;
 import bankingapp.daos.TransactionDao;
+import bankingapp.daos.UserDao;
 import bankingapp.exceptions.InsufficientFundException;
 import bankingapp.exceptions.NoAccountException;
 import bankingapp.exceptions.NonZeroBalanceException;
@@ -15,12 +16,15 @@ import java.util.List;
 
 public class AccountService {
 
+
     AccountDao accountDao;
     TransactionDao transactionDao;
+    UserDao userDao;
 
-    public AccountService(AccountDao accountDao, TransactionDao transactionDao) {
+    public AccountService(AccountDao accountDao, TransactionDao transactionDao, UserDao userDao) {
         this.accountDao = accountDao;
         this.transactionDao = transactionDao;
+        this.userDao = userDao;
     }
 
     public Account createAccount(Account account) throws SQLException {
@@ -64,7 +68,7 @@ public class AccountService {
 
     public void withdraw(int accountId, double amount) throws NoAccountException, SQLException, InsufficientFundException {
         Account account = getAccountById(accountId);
-        if(account.getBalance() <= amount){
+        if(account.getBalance() < amount){
             throw new InsufficientFundException("Not enough funds in account to withdraw.");
         }else{
             account.setBalance(account.getBalance() - amount);
@@ -78,14 +82,18 @@ public class AccountService {
         Account fromAccount = getAccountById(fromAccountId);
         Account toAccount = getAccountById(toAccountId);
 
-        if(fromAccount.getBalance() <= amount){
+        if (fromAccount == null || toAccount == null) {
+            throw new NoAccountException("One or both accounts not found");
+        }
+
+        if(fromAccount.getBalance() < amount){
             throw new InsufficientFundException("Not enough funds in account to withdraw.");
         }else{
             fromAccount.setBalance(fromAccount.getBalance() - amount);
             toAccount.setBalance(toAccount.getBalance() + amount);
         }
         accountDao.saveAccount(fromAccount);
-        Transaction transaction = new Transaction("Transfer Out", amount, "current_date", fromAccount.getUser(), Arrays.asList(fromAccount));
+        Transaction transaction = new Transaction("Transfer", amount, "current_date", fromAccount.getUser(), Arrays.asList(fromAccount));
         transactionDao.saveTransaction(transaction);
 
 
@@ -96,7 +104,7 @@ public class AccountService {
     }
 
     public List<Transaction> getTransactionHistory(int accountId) throws SQLException {
-        return transactionDao.readAllTransactionsByUserId(accountId);
+        return transactionDao.getTransactionsByAccountId(accountId);
     }
 }
 

@@ -24,14 +24,16 @@ public class UserController {
         api.post("/register", this::registerNewUser);
         api.post("/login", this::login);
         api.put("/user", this::updateUser);
-        api.get("/user/:username", this::getUserByUsername);
-        api.delete("/user/:userId", this::deleteUser);
+        api.get("/user/{username}", this::getUserByUsername);
+        api.delete("/user/{userId}", this::deleteUser);
+        api.get("/user/{userId}", this::getUserById);
 
     }
 
     public void registerNewUser(Context ctx) throws SQLException {
         User user = ctx.bodyAsClass(User.class);
         User registerUser = userService.registerNewUser(user);
+        ctx.json(registerUser);
         ctx.status(201);
     }
 
@@ -58,12 +60,14 @@ public class UserController {
         User user = ctx.bodyAsClass(User.class);
         User updatedUser = userService.updateUser(user);
         ctx.json(updatedUser);
+        ctx.status(200);
     }
 
     public void getUserByUsername(Context ctx) throws SQLException {
         String username = ctx.pathParam("username");
         User user = userService.readUserByUsername(username);
         ctx.json(user);
+        ctx.status(200);
     }
 
     public void deleteUser(Context ctx) throws SQLException {
@@ -72,5 +76,10 @@ public class UserController {
         ctx.status(204);
     }
 
-
+    public void getUserById(Context ctx) throws SQLException {
+        int userId = Integer.parseInt(ctx.pathParam("userId"));
+        userService.readByUserId(userId);
+        ctx.json(userId);
+        ctx.status(200);
+    }
 }

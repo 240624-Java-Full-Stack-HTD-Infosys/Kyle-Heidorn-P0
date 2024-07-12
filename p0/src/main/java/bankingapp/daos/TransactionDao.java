@@ -1,17 +1,13 @@
 package bankingapp.daos;
 
-import bankingapp.models.Transaction;
 import bankingapp.models.Account;
+import bankingapp.models.Transaction;
 import bankingapp.models.User;
 import bankingapp.utils.ConnectionUtils;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class TransactionDao {
@@ -22,13 +18,15 @@ public class TransactionDao {
         this.connection = ConnectionUtils.getConnection();
     }
 
+    //checks if the transaction id already exists and then creates the id for it
+    //Also checks if a transaction id exists and needs to be updated
     public Transaction saveTransaction(Transaction transaction) throws SQLException {
         if (transaction.getTransactionId() == null) {
             String sql = "INSERT INTO transactions (transaction_type, amount, date, account_id, user_id) VALUES (?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 pstmt.setString(1, transaction.getTransactionType());
                 pstmt.setDouble(2, transaction.getAmount());
-                pstmt.setString(3, transaction.getDate());
+                pstmt.setString(3, transaction.getDate());  // Assuming you are not using timestamp
                 pstmt.setInt(4, transaction.getAccounts().get(0).getAccountId()); // Assuming first account for simplicity
                 pstmt.setInt(5, transaction.getUser().getUserId());
                 pstmt.executeUpdate();
@@ -43,7 +41,7 @@ public class TransactionDao {
             try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
                 pstmt.setString(1, transaction.getTransactionType());
                 pstmt.setDouble(2, transaction.getAmount());
-                pstmt.setString(3, transaction.getDate());
+                pstmt.setString(3, transaction.getDate());  // Assuming you are not using timestamp
                 pstmt.setInt(4, transaction.getUser().getUserId());
                 pstmt.setInt(5, transaction.getTransactionId());
                 pstmt.executeUpdate();
@@ -52,6 +50,7 @@ public class TransactionDao {
         return transaction;
     }
 
+    //retrieves the transaction by the id
     public Transaction getTransactionById(int transactionId) throws SQLException {
         String sql = "SELECT * FROM transactions WHERE transaction_id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -68,8 +67,9 @@ public class TransactionDao {
                     user.setUserId(results.getInt("user_id"));
                     transaction.setUser(user);
 
-                    List<Account> accounts = getAccountsByTransactionId(transactionId); // Implement this method
-                    transaction.setAccounts(accounts);
+                    Account account = new Account();
+                    account.setAccountId(results.getInt("account_id"));
+                    transaction.setAccounts(List.of(account));
 
                     return transaction;
                 } else {
@@ -104,8 +104,9 @@ public class TransactionDao {
                 user.setUserId(results.getInt("user_id"));
                 transaction.setUser(user);
 
-                List<Account> accounts = getAccountsByTransactionId(results.getInt("transaction_id"));
-                transaction.setAccounts(accounts);
+                Account account = new Account();
+                account.setAccountId(results.getInt("account_id"));
+                transaction.setAccounts(List.of(account));
 
                 transactions.add(transaction);
             }
@@ -130,7 +131,7 @@ public class TransactionDao {
 
                 Account account = new Account();
                 account.setAccountId(results.getInt("account_id"));
-                transaction.setAccounts(Arrays.asList(account));
+                transaction.setAccounts(List.of(account));
 
                 User user = new User();
                 user.setUserId(results.getInt("user_id"));
@@ -141,29 +142,5 @@ public class TransactionDao {
         }
         return transactions;
     }
-
-
-    private List<Account> getAccountsByTransactionId(int transactionId) throws SQLException {
-        String sql = "SELECT a.* FROM accounts a JOIN transaction_accounts ta ON a.account_id = ta.account_id WHERE ta.transaction_id = ?";
-        List<Account> accounts = new ArrayList<>();
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setInt(1, transactionId);
-            ResultSet results = pstmt.executeQuery();
-            while (results.next()) {
-                Account account = new Account();
-                account.setAccountId(results.getInt("account_id"));
-                account.setBalance(results.getDouble("balance"));
-                account.setAccountName(results.getString("account_name"));
-                account.setAccountType(results.getString("account_type"));
-
-                User user = new User();
-                user.setUserId(results.getInt("user_id"));
-                account.setUser(user);
-
-                accounts.add(account);
-            }
-        }
-        return accounts;
-    }
-
 }
+
