@@ -60,6 +60,7 @@ public class AccountController {
     public void deleteAccount(Context ctx) throws SQLException, NonZeroBalanceException {
         int accountId = Integer.parseInt(ctx.pathParam("accountId")); //finds the accountId path
         accountService.deleteAccount(accountId); //calls the delete account method from account service
+        ctx.json("Sorry to see you go. Successfully deleted account" + accountId);
         ctx.status(204);
     }
 
@@ -67,7 +68,7 @@ public class AccountController {
         int accountId = Integer.parseInt(ctx.pathParam("accountId"));   //finds the account Id
         double amount = ctx.bodyAsClass(TransactionDto.class).getAmount(); //calls the dto to retrieve the amount
         accountService.deposit(accountId, amount); //uses the deposit service method to send the amount to the account
-        ctx.json("+ $" + amount);
+        ctx.json("+ $" + amount + "to " + accountId);
         ctx.status(200);
     }
 
@@ -75,7 +76,7 @@ public class AccountController {
         int accountId = Integer.parseInt(ctx.pathParam("accountId"));   //finds the account Id
         double amount = ctx.bodyAsClass(TransactionDto.class).getAmount(); //
         accountService.withdraw(accountId, amount);
-        ctx.json("- $" + amount);
+        ctx.json("- $" + amount + "from " + accountId);
         ctx.status(200);
     }
 
@@ -88,7 +89,7 @@ public class AccountController {
         transactionDto.setToAccountId(toAccountId);
 
         accountService.transfer(transactionDto.getFromAccountId(), transactionDto.getToAccountId(), transactionDto.getAmount());
-        ctx.json("Transferred $" + transactionDto.getAmount());
+        ctx.json("Transferred $" + transactionDto.getAmount() + " from " + "Account " + fromAccountId + " to " + " Account " + toAccountId);
         ctx.status(200);
     }
 
